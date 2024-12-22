@@ -21,7 +21,7 @@ A RESTful API built with Laravel for managing an e-commerce platform. This API h
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone <https://github.com/OquenD/StoreApi/>
 cd <project-directory>
 ```
 
