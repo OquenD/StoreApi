@@ -1,28 +1,28 @@
-# E-commerce API with Laravel
+# Laravel E-commerce API
 
 A RESTful API built with Laravel for managing an e-commerce platform. This API handles user authentication, product management, shopping cart functionality, and order processing.
 
 ## Features
 
-- User authentication using Laravel Sanctum
-- Product management with variants (size, color, etc.)
-- Shopping cart functionality
-- Order processing
-- Search and filter products
+- User Authentication (Register, Login, Logout)
+- Product Management (CRUD operations)
+- Shopping Cart Management
+- Order Processing
+- Product Search and Filtering
 
 ## Requirements
 
-- PHP >= 8.1
+- PHP >= 8.0
 - Composer
-- MySQL >= 8.0
-- Laravel 10.x
+- MySQL/PostgreSQL
+- Laravel Sanctum (for authentication)
 
-## Local Setup
+## Installation
 
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd <project-folder>
+cd <project-directory>
 ```
 
 2. Install dependencies:
@@ -30,19 +30,19 @@ cd <project-folder>
 composer install
 ```
 
-3. Create environment file:
+3. Create and configure your `.env` file:
 ```bash
 cp .env.example .env
 ```
 
-4. Configure your database in the .env file:
+4. Configure your database settings in `.env`:
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=your_database_name
-DB_USERNAME=your_database_user
-DB_PASSWORD=your_database_password
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 ```
 
 5. Generate application key:
@@ -50,7 +50,7 @@ DB_PASSWORD=your_database_password
 php artisan key:generate
 ```
 
-6. Run migrations:
+6. Run database migrations:
 ```bash
 php artisan migrate
 ```
@@ -60,120 +60,135 @@ php artisan migrate
 php artisan serve
 ```
 
-The API will be available at `http://localhost:8000`
-
 ## API Endpoints
 
 ### Authentication
 
-#### Register User
+#### Register
 - **POST** `/api/v1/register`
-- **Body:**
-```json
-{
+- Body:
+  ```json
+  {
     "name": "string",
     "email": "string",
-    "password": "string"
-}
-```
+    "password": "string (min: 8 characters)"
+  }
+  ```
 
 #### Login
 - **POST** `/api/v1/login`
-- **Body:**
-```json
-{
+- Body:
+  ```json
+  {
     "email": "string",
     "password": "string"
-}
-```
+  }
+  ```
 
 #### Logout
 - **POST** `/api/v1/logout`
-- **Headers:** Bearer Token required
+- Requires: Authentication Token
+
+#### Get Profile
+- **GET** `/api/v1/profile`
+- Requires: Authentication Token
 
 ### Products
 
 #### List Products
 - **GET** `/api/v1/products`
-- **Query Parameters:**
-  - per_page: number (default: 10)
+- Query Parameters:
+  - `per_page`: number (default: 10)
 
-#### Get Product
+#### Get Single Product
 - **GET** `/api/v1/products/{id}`
 
-#### Search Products
-- **GET** `/api/v1/products/search`
-- **Query Parameters:**
-  - name: string
-  - min_price: number
-  - max_price: number
-  - color: string
-  - size: string
-  - brand: string
-  - collection: string
-  - gender: string
+#### Create Product
+- **POST** `/api/v1/products`
+- Requires: Authentication Token
+- Body:
+  ```json
+  {
+    "name": "string",
+    "description": "string",
+    "price": "number",
+    "other_attributes": "json",
+    "variants": [
+      {
+        "color": "string",
+        "size": "string",
+        "stock": "number"
+      }
+    ]
+  }
+  ```
 
-### Shopping Cart (Protected Routes)
+#### Update Product
+- **PUT** `/api/v1/products/{id}`
+- Requires: Authentication Token
+
+#### Delete Product
+- **DELETE** `/api/v1/products/{id}`
+- Requires: Authentication Token
+
+#### Search Products
+- **POST** `/api/v1/products/search`
+- Query Parameters:
+  - `name`: string
+  - `min_price`: number
+  - `max_price`: number
+  - `attributes`: string
+  - `value`: string
+  - `color`: string
+
+### Shopping Cart
 
 #### View Cart
 - **GET** `/api/v1/cart`
-- **Headers:** Bearer Token required
+- Requires: Authentication Token
 
-#### Add to Cart
-- **POST** `/api/v1/cart/add`
-- **Headers:** Bearer Token required
-- **Body:**
-```json
-{
+#### Add Item to Cart
+- **POST** `/api/v1/cart/items`
+- Requires: Authentication Token
+- Body:
+  ```json
+  {
     "variant_id": "number",
     "quantity": "number"
-}
-```
+  }
+  ```
 
 #### Update Cart Item
-- **PUT** `/api/v1/cart/update/{cartItemId}`
-- **Headers:** Bearer Token required
-- **Body:**
-```json
-{
+- **PUT** `/api/v1/cart/items/{cartItemId}`
+- Requires: Authentication Token
+- Body:
+  ```json
+  {
     "quantity": "number"
-}
-```
+  }
+  ```
 
-#### Remove from Cart
-- **DELETE** `/api/v1/cart/remove/{cartItemId}`
-- **Headers:** Bearer Token required
+#### Remove Cart Item
+- **DELETE** `/api/v1/cart/items/{cartItemId}`
+- Requires: Authentication Token
 
-### Orders (Protected Routes)
-
-#### Create Order
-- **POST** `/api/v1/orders/create`
-- **Headers:** Bearer Token required
-- **Body:**
-```json
-{
-    "payment_method": "string",
-    "shipping_address": {
-        "street": "string",
-        "city": "string",
-        "state": "string",
-        "postal_code": "string",
-        "country": "string"
-    }
-}
-```
+### Orders
 
 #### List Orders
 - **GET** `/api/v1/orders`
-- **Headers:** Bearer Token required
+- Requires: Authentication Token
+
+#### Create Order
+- **POST** `/api/v1/orders`
+- Requires: Authentication Token
 
 #### Get Order Details
 - **GET** `/api/v1/orders/{id}`
-- **Headers:** Bearer Token required
+- Requires: Authentication Token
 
 ## Authentication
 
-The API uses Laravel Sanctum for authentication. After logging in, you'll receive a token that should be included in subsequent requests as a Bearer token in the Authorization header:
+This API uses Laravel Sanctum for authentication. After logging in, you'll receive a token that should be included in subsequent requests as a Bearer token in the Authorization header:
 
 ```
 Authorization: Bearer <your-token>
@@ -181,7 +196,7 @@ Authorization: Bearer <your-token>
 
 ## Error Handling
 
-The API returns standard HTTP status codes:
+The API returns appropriate HTTP status codes and error messages:
 
 - 200: Success
 - 201: Created
@@ -189,36 +204,23 @@ The API returns standard HTTP status codes:
 - 401: Unauthorized
 - 403: Forbidden
 - 404: Not Found
-- 422: Validation Error
-- 500: Server Error
+- 500: Internal Server Error
 
-Error responses include a message and, when applicable, validation details:
+## Development
 
-```json
-{
-    "message": "The given data was invalid.",
-    "errors": {
-        "field": ["Error message"]
-    }
-}
-```
-
-## Security
-
-- All passwords are hashed
-- Protected routes require authentication
-- Users can only access their own resources (cart, orders)
-- Input validation is implemented for all endpoints
-- CORS middleware is configured for API access
-
-## Testing
-
-To run the tests:
-
+To run tests:
 ```bash
 php artisan test
 ```
 
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
+
 ## License
 
-This project is open-sourced software licensed under the MIT license.
+[MIT License](LICENSE)
